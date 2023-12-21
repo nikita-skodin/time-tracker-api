@@ -1,4 +1,4 @@
 .idea
 target
 .mvn
-src/main/resources/application-nikita.yaml
+src/main/resources/application-dev-nikita.yaml
