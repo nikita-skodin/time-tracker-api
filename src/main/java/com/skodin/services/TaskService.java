@@ -1,12 +1,13 @@
 package com.skodin.services;
 
+import com.skodin.dtos.StatisticsDto;
 import com.skodin.exceprions.BadRequestException;
 import com.skodin.exceprions.NotFoundException;
+import com.skodin.models.AppUser;
 import com.skodin.models.Task;
 import com.skodin.repositories.TaskRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
-import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -23,7 +24,7 @@ public class TaskService {
 
     private final TaskRepository taskRepository;
 
-    public <S extends Task> S saveAndFlush(S entity) {
+    public Task saveAndFlush(Task entity) {
 
         List<Task> tasks = entity.getUser().getTasks();
         tasks.add(entity);
@@ -41,11 +42,37 @@ public class TaskService {
         return taskRepository.findById(uuid).orElseThrow(() -> new NotFoundException("Task is not found"));
     }
 
+    private List<Task> getTop5TasksByStartTimeNotNullAndStopTimeNull() {
+        return taskRepository.getTop5TasksByStartTimeNotNullAndStopTimeNull();
+    }
+
+    public void clear() {
+
+        List<Task> list = getTop5TasksByStartTimeNotNullAndStopTimeNull();
+        LocalDateTime time = LocalDateTime.now().toLocalDate().atStartOfDay().minusSeconds(1L);
+
+        while (!list.isEmpty()){
+            log.info(list);
+
+            // TODO тут оптимизировать
+            for (Task task : list) {
+                task.setStopTime(time);
+                saveAndFlush(task);
+            }
+
+            list = getTop5TasksByStartTimeNotNullAndStopTimeNull();
+        }
+    }
+
+    public List<Task> findAll() {
+        return taskRepository.findAll();
+    }
+
     public Task startTime(UUID taskId) {
 
         Task task = findById(taskId);
 
-        if (task.getStartTime() != null){
+        if (task.getStartTime() != null) {
             throw new BadRequestException("Task is already start");
         }
 
@@ -59,11 +86,11 @@ public class TaskService {
 
         Task task = findById(taskId);
 
-        if (task.getStopTime() != null){
+        if (task.getStopTime() != null) {
             throw new BadRequestException("Task is already stop");
         }
 
-        if (task.getStartTime() == null){
+        if (task.getStartTime() == null) {
             throw new BadRequestException("Task is not start");
         }
 
@@ -71,5 +98,9 @@ public class TaskService {
 
         return taskRepository.saveAndFlush(task);
 
+    }
+
+    public void clearUser(AppUser appUser) {
+        taskRepository.deleteAllByUser(appUser);
     }
 }

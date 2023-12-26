@@ -8,6 +8,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
 import java.util.UUID;
 
 @RestController
@@ -17,6 +18,11 @@ public class TaskController {
 
     private final TaskMapper taskMapper;
     private final TaskService taskService;
+
+    @GetMapping
+    public List<TaskDto> getAll(){
+        return taskService.findAll().stream().map(taskMapper::getDto).toList();
+    }
 
     @PostMapping
     public ResponseEntity<TaskDto> create(@RequestBody TaskDto dto) {

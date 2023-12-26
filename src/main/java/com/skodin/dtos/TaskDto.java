@@ -31,5 +31,5 @@ public class TaskDto {
     UUID userId;
 
     @JsonProperty(access = JsonProperty.Access.READ_ONLY)
-    Duration duration;
+    String duration;
 }

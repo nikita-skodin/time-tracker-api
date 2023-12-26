@@ -1,8 +1,6 @@
 package com.skodin.controllers;
 
-import com.skodin.dtos.AppUserDto;
-import com.skodin.dtos.TaskDto;
-import com.skodin.dtos.TimePeriodDto;
+import com.skodin.dtos.*;
 import com.skodin.models.AppUser;
 import com.skodin.services.AppUserService;
 import com.skodin.services.TaskService;
@@ -23,6 +21,7 @@ public class AppUserController {
     private final AppUserMapper appUserMapper;
     private final TaskMapper taskMapper;
     private final AppUserService appUserService;
+    private final TaskService taskService;
 
     @PostMapping
     public ResponseEntity<AppUserDto> createUser(@RequestBody AppUserDto appUserDto) {
@@ -46,10 +45,32 @@ public class AppUserController {
      * с сортировкой от большего к меньшему (для ответа на вопрос, На какие задачи я потратил больше времени);
      */
     @GetMapping("/{user_id}/employment_statistics")
-    public List<TaskDto> getTasksForTimePeriod(@PathVariable("user_id") UUID id,
+    public List<TaskDto> getTasksByDestination(@PathVariable("user_id") UUID id,
                                                @RequestBody TimePeriodDto timePeriod) {
-        return appUserService.getTasksForTimePeriod(id, timePeriod).stream().map(taskMapper::getDto).toList();
+        return appUserService.getTasksByDestination(id, timePeriod).stream().map(taskMapper::getDto).toList();
     }
 
+    @GetMapping("/{user_id}/interval_statistics")
+    public List<TimeIntervalDto> getIntervalStatistic(@PathVariable("user_id") UUID id,
+                                                      @RequestBody TimePeriodDto timePeriod) {
+        return appUserService.getIntervalStatistic(id, timePeriod);
+    }
 
+    @GetMapping("/{user_id}/work_hours")
+    public StatisticsDto getWorkHours(@PathVariable("user_id") UUID id,
+                                      @RequestBody TimePeriodDto timePeriod) {
+        return appUserService.getWorkHours(id, timePeriod);
+    }
+
+    @PostMapping("/{user_id}/clean")
+    public boolean cleanUser(@PathVariable("user_id") UUID id) {
+        taskService.clearUser(appUserService.findById(id));
+        return true;
+    }
+
+    @DeleteMapping("/{user_id}")
+    public boolean deleteUser(@PathVariable("user_id") UUID id) {
+        appUserService.delete(id);
+        return true;
+    }
 }

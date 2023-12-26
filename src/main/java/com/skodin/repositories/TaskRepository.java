@@ -1,5 +1,6 @@
 package com.skodin.repositories;
 
+import com.skodin.models.AppUser;
 import com.skodin.models.Task;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
@@ -7,7 +8,6 @@ import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import java.time.Instant;
-import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
 
@@ -21,4 +21,7 @@ public interface TaskRepository extends JpaRepository<Task, UUID> {
                                             @Param("start_time") Instant startTime,
                                             @Param("stop_time") Instant stopTime);
 
+    List<Task> getTop5TasksByStartTimeNotNullAndStopTimeNull();
+
+    void deleteAllByUser(AppUser user);
 }

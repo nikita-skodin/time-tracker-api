@@ -7,7 +7,10 @@ import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
 import org.modelmapper.Converter;
 import org.modelmapper.ModelMapper;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Component;
+
+import java.time.Duration;
 
 @Component
 @RequiredArgsConstructor
@@ -37,7 +40,9 @@ public class TaskMapper {
     @PostConstruct
     public void setupMapper() {
         mapper.createTypeMap(Task.class, TaskDto.class)
-                .addMappings(m -> m.skip(TaskDto::setUserId)).setPostConverter(toDtoConverter());
+                .addMappings(m -> m.skip(TaskDto::setUserId)).setPostConverter(toDtoConverter())
+                .addMappings(m -> m.skip(TaskDto::setDuration)).setPostConverter(toDtoConverter());
+
         mapper.createTypeMap(TaskDto.class, Task.class)
                 .addMappings(m -> m.skip(Task::setUser)).setPostConverter(toEntityConverter());
     }
@@ -65,7 +70,13 @@ public class TaskMapper {
     }
 
     private void mapSpecificFields(Task source, TaskDto destination) {
-        destination.setUserId(source.getId());
+        destination.setUserId(source.getUser().getId());
+        Duration duration = source.getDuration();
+
+        if (duration != null) {
+            String stringDuration = String.format("%02d:%02d", duration.toHours() % 24, duration.toMinutes() % 60);
+            destination.setDuration(stringDuration);
+        }
     }
 
 }

@@ -39,7 +39,7 @@ public class Task {
     AppUser user;
 
     @Type(PostgreSQLIntervalType.class)
-    @Column(columnDefinition = "interval")
+    @Column(columnDefinition = "interval", insertable = false, updatable = false)
     Duration duration;
 
 }
